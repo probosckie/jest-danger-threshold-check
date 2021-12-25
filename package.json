@@ -1,0 +1,27 @@
+{
+  "name": "jest-danger-threshold-check",
+  "version": "1.0.0",
+  "description": "a way to add coverage checks only for the code that's changed in a pr and not global threshold check",
+  "main": "test.js",
+  "type": "module",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/probosckie/jest-danger-threshold-check.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/probosckie/jest-danger-threshold-check/issues"
+  },
+  "homepage": "https://github.com/probosckie/jest-danger-threshold-check#readme",
+  "devDependencies": {
+    "@babel/cli": "^7.16.0",
+    "@babel/core": "^7.16.5",
+    "@babel/preset-env": "^7.16.5",
+    "jest": "^27.4.5"
+  }
+}
