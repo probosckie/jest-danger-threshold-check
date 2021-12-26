@@ -14,4 +14,4 @@ jobs:
         run: npx danger ci
         #uses: danger/danger-js@9.1.6
         env:
-          GITHUB_TOKEN: ${{ secrets.DANGER_GITHUB_API_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
