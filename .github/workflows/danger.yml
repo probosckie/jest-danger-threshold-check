@@ -1,4 +1,4 @@
-name: Danger JS
+name: Danger Validate
 on: [pull_request]
 
 jobs:
