@@ -5,7 +5,7 @@
   "main": "test.js",
   "type": "module",
   "scripts": {
-    "test": "jest --outputFile test-results.json --json"
+    "test": "jest"
   },
   "repository": {
     "type": "git",

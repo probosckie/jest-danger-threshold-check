@@ -20,7 +20,7 @@ jobs:
       - name: Install Dependencies
         run: npm ci
       - name: Create test coverage
-        run: npm test
+        run: npm run test -- --coverage --testLocationInResults --json --outputFile test-results.json
       - name: Danger
         run: npx danger ci
         #uses: danger/danger-js@9.1.6
