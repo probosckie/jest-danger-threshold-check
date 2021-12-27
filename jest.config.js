@@ -1,5 +1,5 @@
 export default {
   collectCoverage: true,
-  collectCoverageFrom: ['./**/*.{js,jsx}'],
+  collectCoverageFrom: ['src/**/*.{js,jsx}'],
   coverageReporters: ['json'],
 };
