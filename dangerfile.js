@@ -34,7 +34,11 @@ const modifiedOrCreatedFiles = [
 const sumFile = modifiedOrCreatedFiles[3];
 //message('the 1st file which is changed is ' + sumFile);
 
-danger.git.diffForFile(sumFile).then((change) => message(change));
+danger.git.diffForFile(sumFile).then((change) => {
+  message('found changed lines in this file');
+  message(change);
+  //console.log('checking if console.log works', change);
+});
 
 /* message(
   'Modified or created files in this PR: \n - ' +

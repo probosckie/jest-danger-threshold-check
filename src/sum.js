@@ -9,4 +9,5 @@ const add2 = (x, y, z) => {
 
 const s = 1;
 
+const d = 2;
 export { add, add2 };
