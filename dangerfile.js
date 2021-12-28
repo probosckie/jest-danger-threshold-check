@@ -6,7 +6,7 @@ import path from 'path';
 //const modifiedMD = danger.git.modified_files.join('- ');
 //message('Changed Files in this PR: \n - ' + modifiedMD);
 
-//codeCoverage();
+codeCoverage();
 
 const createLink = (href, text) => `<a href='${href}'>${text}</a>`;
 
@@ -31,19 +31,18 @@ const modifiedOrCreatedFiles = [
   .filter((p) => p.includes('src/'))
   .filter((p) => isOnlyFiles(p) && isAppFile(p));
 
-const sumFile = modifiedOrCreatedFiles[3];
-//message('the 1st file which is changed is ' + sumFile);
+//const sumFile = modifiedOrCreatedFiles[1];
+//message('the 1st file which is changed is ' + modifiedOrCreatedFiles);
 
-danger.git.diffForFile(sumFile).then((change) => {
+/* danger.git.structuredDiffForFile('src/sum.js').then((change) => {
   message('found changed lines in this file');
-  message(change);
-  //console.log('checking if console.log works', change);
-});
+  console.log(JSON.stringify(change));
+}); */
 
-/* message(
+message(
   'Modified or created files in this PR: \n - ' +
     modifiedOrCreatedFiles.join(', '),
-); */
+);
 
 /* const untestedFiles = modifiedOrCreatedFiles
   .filter((m) => !/(test|spec|snap)/.test(m))

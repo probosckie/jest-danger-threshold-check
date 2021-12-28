@@ -1,0 +1,104 @@
+{
+  "chunks": [
+    {
+      "content": "@@ -1,12 +1,13 @@",
+      "changes": [
+        {
+          "type": "del",
+          "del": true,
+          "ln": 1,
+          "content": "-import {subtract} from './new-non-test'"
+        },
+        {
+          "type": "add",
+          "add": true,
+          "ln": 1,
+          "content": "+import { subtract } from './subtract';"
+        },
+        {
+          "type": "normal",
+          "normal": true,
+          "ln1": 2,
+          "ln2": 2,
+          "content": " const add = (x, y) => {"
+        },
+        { "type": "del", "del": true, "ln": 3, "content": "-  return x+y" },
+        { "type": "del", "del": true, "ln": 4, "content": "-}" },
+        { "type": "add", "add": true, "ln": 3, "content": "+  return x + y;" },
+        { "type": "add", "add": true, "ln": 4, "content": "+};" },
+        {
+          "type": "normal",
+          "normal": true,
+          "ln1": 5,
+          "ln2": 5,
+          "content": " "
+        },
+        {
+          "type": "del",
+          "del": true,
+          "ln": 6,
+          "content": "-const add2 = (x,y,z) => {"
+        },
+        { "type": "del", "del": true, "ln": 7, "content": "-  return x+y+z" },
+        { "type": "del", "del": true, "ln": 8, "content": "-}" },
+        {
+          "type": "add",
+          "add": true,
+          "ln": 6,
+          "content": "+const add2 = (x, y, z) => {"
+        },
+        {
+          "type": "add",
+          "add": true,
+          "ln": 7,
+          "content": "+  return x + y + z;"
+        },
+        { "type": "add", "add": true, "ln": 8, "content": "+};" },
+        {
+          "type": "normal",
+          "normal": true,
+          "ln1": 9,
+          "ln2": 9,
+          "content": " "
+        },
+        {
+          "type": "normal",
+          "normal": true,
+          "ln1": 10,
+          "ln2": 10,
+          "content": " const s = 1;"
+        },
+        {
+          "type": "normal",
+          "normal": true,
+          "ln1": 11,
+          "ln2": 11,
+          "content": " "
+        },
+        {
+          "type": "del",
+          "del": true,
+          "ln": 12,
+          "content": "-export {add, add2}"
+        },
+        {
+          "type": "del",
+          "del": true,
+          "ln": 12,
+          "content": "\\ No newline at end of file"
+        },
+        { "type": "add", "add": true, "ln": 12, "content": "+const d = 2;" },
+        {
+          "type": "add",
+          "add": true,
+          "ln": 13,
+          "content": "+export { add, add2 };"
+        }
+      ],
+      "oldStart": 1,
+      "oldLines": 12,
+      "newStart": 1,
+      "newLines": 13
+    }
+  ]
+}
