@@ -8,30 +8,28 @@ import path from 'path';
 
 codeCoverage();
 
-const createLink = (href: string, text: string): string =>
-  `<a href='${href}'>${text}</a>`;
+const createLink = (href, text) => `<a href='${href}'>${text}</a>`;
 
-const toLinkList = (files: string[]): string => {
+/* const toLinkList = (files: string[]): string => {
   const repoURL = danger.github.pr.head.repo.html_url;
   const ref = danger.github.pr.head.ref;
   return files
     .map((f) => createLink(`${repoURL}/blob/${ref}/${f}`, f))
     .map((a) => `- ${a}`)
     .join('\n');
-};
+}; */
 
-const isAppFile = (file: string) =>
-  /^(?!.*\.d\.ts).*?\.(ts|js|tsx|jsx)$/.test(file);
+const isAppFile = (file) => /^(?!.*\.d\.ts).*?\.(ts|js|tsx|jsx)$/.test(file);
 
-const isOnlyFiles = (file: string) =>
+const isOnlyFiles = (file) =>
   fs.existsSync(file) && fs.lstatSync(file).isFile();
 
 const modifiedOrCreatedFiles = [
   ...danger.git.modified_files,
   ...danger.git.created_files,
 ]
-  .filter((p: string) => p.includes('src/'))
-  .filter((p: string) => isOnlyFiles(p) && isAppFile(p));
+  .filter((p) => p.includes('src/'))
+  .filter((p) => isOnlyFiles(p) && isAppFile(p));
 
 message(
   'Modified or created files in this PR: \n - ' +
