@@ -6,7 +6,7 @@ import path from 'path';
 //const modifiedMD = danger.git.modified_files.join('- ');
 //message('Changed Files in this PR: \n - ' + modifiedMD);
 
-codeCoverage();
+//codeCoverage();
 
 const createLink = (href, text) => `<a href='${href}'>${text}</a>`;
 
@@ -31,10 +31,15 @@ const modifiedOrCreatedFiles = [
   .filter((p) => p.includes('src/'))
   .filter((p) => isOnlyFiles(p) && isAppFile(p));
 
-message(
+const sumFile = modifiedOrCreatedFiles[3];
+//message('the 1st file which is changed is ' + sumFile);
+
+danger.git.diffForFile(sumFile).then((change) => message(change));
+
+/* message(
   'Modified or created files in this PR: \n - ' +
     modifiedOrCreatedFiles.join(', '),
-);
+); */
 
 /* const untestedFiles = modifiedOrCreatedFiles
   .filter((m) => !/(test|spec|snap)/.test(m))
