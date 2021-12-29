@@ -25,5 +25,8 @@
     "danger": "^10.7.1",
     "danger-plugin-code-coverage": "^1.1.8",
     "jest": "^27.4.5"
+  },
+  "dependencies": {
+    "xml-js": "^1.6.11"
   }
 }

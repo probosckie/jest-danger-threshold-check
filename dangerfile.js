@@ -2,13 +2,27 @@ import { message, danger, warn } from 'danger';
 import { codeCoverage } from 'danger-plugin-code-coverage';
 import fs from 'fs';
 import path from 'path';
+import convert from 'xml-js';
 
 //const modifiedMD = danger.git.modified_files.join('- ');
 //message('Changed Files in this PR: \n - ' + modifiedMD);
 
-codeCoverage();
+const jestCoverageReport = '';
+const coverReportFileName = './coverage/cobertura-coverage.xml';
+let coverageJSON = '';
+try {
+  const data = fs.readFileSync(coverReportFileName, 'utf8');
+  //console.log(data);
+  coverageJSON = JSON.parse(
+    convert.xml2json(data, { compact: true, spaces: 4 }),
+  );
+} catch (err) {
+  console.error(err);
+}
 
-const createLink = (href, text) => `<a href='${href}'>${text}</a>`;
+//codeCoverage();
+
+//const createLink = (href, text) => `<a href='${href}'>${text}</a>`;
 
 /* const toLinkList = (files: string[]): string => {
   const repoURL = danger.github.pr.head.repo.html_url;
@@ -39,11 +53,11 @@ const modifiedOrCreatedFiles = [
   console.log(JSON.stringify(change));
 }); */
 
-message(
+/* message(
   'Modified or created files in this PR: \n - ' +
     modifiedOrCreatedFiles.join(', '),
 );
-
+ */
 /* const untestedFiles = modifiedOrCreatedFiles
   .filter((m) => !/(test|spec|snap)/.test(m))
   .map((file) => ({
