@@ -117,12 +117,15 @@ function getMissedCoverageReport(fileName) {
       lines_which_were_missed: 0,
     };
 
+    let linesCoverage, methodsAsArray, methodsCoverage;
+
     const coverageForSelectedFile =
       coverageJSON.coverage.packages.package.classes.class.filter(
         (file) => file._attributes.filename === fileName,
       );
+
     if (coverageForSelectedFile && coverageForSelectedFile.length) {
-      const linesCoverage = coverageForSelectedFile[0].lines.line
+      linesCoverage = coverageForSelectedFile[0].lines.line
         .map((line) => ({
           number: line._attributes.number,
           hit: isHit(line._attributes.hits),
@@ -132,21 +135,23 @@ function getMissedCoverageReport(fileName) {
           return acc;
         }, {});
 
-      const methodsAsArray = Array.isArray(
-        coverageForSelectedFile[0].methods.method,
-      )
-        ? coverageForSelectedFile[0].methods.method
-        : [coverageForSelectedFile[0].methods.method];
+      if (coverageForSelectedFile[0].methods.method) {
+        methodsAsArray = Array.isArray(
+          coverageForSelectedFile[0].methods.method,
+        )
+          ? coverageForSelectedFile[0].methods.method
+          : [coverageForSelectedFile[0].methods.method];
 
-      const methodsCoverage = methodsAsArray
-        .map((methodMeta) => ({
-          number: methodMeta.lines.line._attributes.number,
-          hit: isHit(methodMeta._attributes.hits),
-        }))
-        .reduce((acc, current) => {
-          acc[current.number] = current.hit;
-          return acc;
-        }, {});
+        methodsCoverage = methodsAsArray
+          .map((methodMeta) => ({
+            number: methodMeta.lines.line._attributes.number,
+            hit: isHit(methodMeta._attributes.hits),
+          }))
+          .reduce((acc, current) => {
+            acc[current.number] = current.hit;
+            return acc;
+          }, {});
+      }
 
       additions.forEach((line) => {
         const lineNumber = line.ln.toString();
@@ -156,10 +161,12 @@ function getMissedCoverageReport(fileName) {
             report.lines_which_were_missed++;
           }
         }
-        if (lineNumber in methodsCoverage) {
-          report.methods_which_changed++;
-          if (!methodsCoverage[lineNumber]) {
-            report.methods_which_were_missed++;
+        if (methodsCoverage) {
+          if (lineNumber in methodsCoverage) {
+            report.methods_which_changed++;
+            if (!methodsCoverage[lineNumber]) {
+              report.methods_which_were_missed++;
+            }
           }
         }
       });
