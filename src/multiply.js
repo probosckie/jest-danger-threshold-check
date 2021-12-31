@@ -1,5 +1,7 @@
-const multiply = (x, y) => {
-  if (x === 0 || y === 0) {
+const multiply2 = (x, y) => {
+  if (y === 0 || x === 0) {
     return 0;
   } else return x * y;
 };
+
+export { multiply2 };
