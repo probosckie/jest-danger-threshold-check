@@ -50,6 +50,11 @@ const modifiedOrCreatedFiles = [
   .filter((p) => p.includes('src/'))
   .filter((p) => isOnlyFiles(p) && isAppFile(p) && !isATestFile(p));
 
+function isHit(param) {
+  return param !== '0';
+}
+
+//console.log(modifiedOrCreatedFiles);
 //call for modified files which are not tests, not for new files (for new files )
 function checkMissingCoverageLines(fileName) {
   return danger.git.structuredDiffForFile(fileName).then((change) => {
@@ -61,7 +66,7 @@ function checkMissingCoverageLines(fileName) {
     if (coverageForSelectedFile && coverageForSelectedFile.length) {
       //if its a line which is hit - but it's a missed function - then the function takes priority (a function which has not been called
       const missedLines = coverageForSelectedFile[0].lines.line
-        .filter((line) => line._attributes.hits === '0')
+        .filter((line) => isHit(line._attributes.hits))
         .map((line) => {
           return line._attributes.number;
         })
@@ -79,7 +84,7 @@ function checkMissingCoverageLines(fileName) {
         : [coverageForSelectedFile[0].methods.method];
 
       const missedFunctions = methodsAsArray
-        .filter((methodMeta) => methodMeta._attributes.hits === '0')
+        .filter((methodMeta) => isHit(methodMeta._attributes.hits))
         .map((methodMeta) => {
           return methodMeta.lines.line._attributes.number;
         })
@@ -101,20 +106,87 @@ function checkMissingCoverageLines(fileName) {
   });
 }
 
-/* checkMissingCoverageLines('src/multiply.js').then((value) =>
-  console.log(value),
-); */
+function getMissedCoverageReport(fileName) {
+  return danger.git.structuredDiffForFile(fileName).then((change) => {
+    const additions = change.chunks[0].changes.filter((c) => c.type === 'add');
 
-let reportOfAllFilesMissingTests = '';
+    const report = {
+      methods_which_changed: 0,
+      methods_which_were_missed: 0,
+      lines_which_changed: 0,
+      lines_which_were_missed: 0,
+    };
+
+    const coverageForSelectedFile =
+      coverageJSON.coverage.packages.package.classes.class.filter(
+        (file) => file._attributes.filename === fileName,
+      );
+    if (coverageForSelectedFile && coverageForSelectedFile.length) {
+      const linesCoverage = coverageForSelectedFile[0].lines.line
+        .map((line) => ({
+          number: line._attributes.number,
+          hit: isHit(line._attributes.hits),
+        }))
+        .reduce((acc, current) => {
+          acc[current.number] = current.hit;
+          return acc;
+        }, {});
+
+      const methodsAsArray = Array.isArray(
+        coverageForSelectedFile[0].methods.method,
+      )
+        ? coverageForSelectedFile[0].methods.method
+        : [coverageForSelectedFile[0].methods.method];
+
+      const methodsCoverage = methodsAsArray
+        .map((methodMeta) => ({
+          number: methodMeta.lines.line._attributes.number,
+          hit: isHit(methodMeta._attributes.hits),
+        }))
+        .reduce((acc, current) => {
+          acc[current.number] = current.hit;
+          return acc;
+        }, {});
+
+      additions.forEach((line) => {
+        const lineNumber = line.ln.toString();
+        if (lineNumber in linesCoverage) {
+          report.lines_which_changed++;
+          if (!linesCoverage[lineNumber]) {
+            report.lines_which_were_missed++;
+          }
+        }
+        if (lineNumber in methodsCoverage) {
+          report.methods_which_changed++;
+          if (!methodsCoverage[lineNumber]) {
+            report.methods_which_were_missed++;
+          }
+        }
+      });
+      return report;
+    }
+  });
+}
+
+const restriction = {
+  newFile: {
+    methodMiss: 0.4,
+    lineMiss: 0.5,
+  },
+  existingFile: {
+    methodMiss: 0.2,
+    lineMiss: 0.5,
+  },
+};
 
 const generateMissingTestFilesSummary = async (modifiedFiles) => {
   let report = '';
   for (let i = 0; i < modifiedFiles.length; i++) {
-    const r = await checkMissingCoverageLines(modifiedFiles[i]);
-    report += modifiedFiles[i] + ' ' + JSON.stringify(r) + ' ';
+    //const r = await checkMissingCoverageLines(modifiedFiles[i]);
+    const r = await getMissedCoverageReport(modifiedFiles[i]);
+    report += modifiedFiles[i] + ': ' + JSON.stringify(r) + '\n';
   }
-  console.log(report);
-  //return report;
+  message(report);
 };
 
 schedule(generateMissingTestFilesSummary(modifiedOrCreatedFiles));
