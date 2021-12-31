@@ -112,9 +112,9 @@ function getMissedCoverageReport(fileName) {
 
     const report = {
       methods_which_changed: 0,
-      methods_which_were_missed: 0,
+      methods_which_were_hit: 0,
       lines_which_changed: 0,
-      lines_which_were_missed: 0,
+      lines_which_were_hit: 0,
     };
 
     let linesCoverage, methodsAsArray, methodsCoverage;
@@ -157,15 +157,15 @@ function getMissedCoverageReport(fileName) {
         const lineNumber = line.ln.toString();
         if (lineNumber in linesCoverage) {
           report.lines_which_changed++;
-          if (!linesCoverage[lineNumber]) {
-            report.lines_which_were_missed++;
+          if (linesCoverage[lineNumber]) {
+            report.lines_which_were_hit++;
           }
         }
         if (methodsCoverage) {
           if (lineNumber in methodsCoverage) {
             report.methods_which_changed++;
-            if (!methodsCoverage[lineNumber]) {
-              report.methods_which_were_missed++;
+            if (methodsCoverage[lineNumber]) {
+              report.methods_which_were_hit++;
             }
           }
         }
@@ -177,12 +177,12 @@ function getMissedCoverageReport(fileName) {
 
 const restriction = {
   newFile: {
-    methodMiss: 0.4,
-    lineMiss: 0.5,
+    methodHit: 0.4,
+    lineHit: 0.5,
   },
   existingFile: {
-    methodMiss: 0.2,
-    lineMiss: 0.5,
+    methodHit: 0.2,
+    lineHit: 0.5,
   },
 };
 
