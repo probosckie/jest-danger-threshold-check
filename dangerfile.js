@@ -54,7 +54,7 @@ function isHit(param) {
   return param !== '0';
 }
 
-//console.log(modifiedOrCreatedFiles);
+console.log(modifiedOrCreatedFiles);
 //call for modified files which are not tests, not for new files (for new files )
 function checkMissingCoverageLines(fileName) {
   return danger.git.structuredDiffForFile(fileName).then((change) => {

@@ -4,4 +4,8 @@ const subtract3 = (a, b, c) => {
   } else return a - b - c;
 };
 
-export { subtract3 };
+const subtract4 = (a, b, c, d) => {
+  return a - b - c - d;
+};
+
+export { subtract3, subtract4 };
