@@ -1,4 +1,4 @@
-import { message, danger, warn, schedule } from 'danger';
+import { message, danger, warn, schedule, fail } from 'danger';
 import { codeCoverage } from 'danger-plugin-code-coverage';
 import fs from 'fs';
 import path from 'path';
@@ -49,6 +49,11 @@ const modifiedOrCreatedFiles = [
 ]
   .filter((p) => p.includes('src/'))
   .filter((p) => isOnlyFiles(p) && isAppFile(p) && !isATestFile(p));
+
+const createdFilesMap = [...danger.git.created_files].reduce((acc, current) => {
+  acc[current] = true;
+  return acc;
+}, {});
 
 function isHit(param) {
   return param !== '0';
@@ -112,17 +117,20 @@ function getMissedCoverageReport(fileName) {
 
     const report = {
       methods_which_changed: 0,
-      methods_which_were_missed: 0,
+      methods_which_were_hit: 0,
       lines_which_changed: 0,
-      lines_which_were_missed: 0,
+      lines_which_were_hit: 0,
     };
+
+    let linesCoverage, methodsAsArray, methodsCoverage;
 
     const coverageForSelectedFile =
       coverageJSON.coverage.packages.package.classes.class.filter(
         (file) => file._attributes.filename === fileName,
       );
+
     if (coverageForSelectedFile && coverageForSelectedFile.length) {
-      const linesCoverage = coverageForSelectedFile[0].lines.line
+      linesCoverage = coverageForSelectedFile[0].lines.line
         .map((line) => ({
           number: line._attributes.number,
           hit: isHit(line._attributes.hits),
@@ -132,37 +140,48 @@ function getMissedCoverageReport(fileName) {
           return acc;
         }, {});
 
-      const methodsAsArray = Array.isArray(
-        coverageForSelectedFile[0].methods.method,
-      )
-        ? coverageForSelectedFile[0].methods.method
-        : [coverageForSelectedFile[0].methods.method];
+      if (coverageForSelectedFile[0].methods.method) {
+        methodsAsArray = Array.isArray(
+          coverageForSelectedFile[0].methods.method,
+        )
+          ? coverageForSelectedFile[0].methods.method
+          : [coverageForSelectedFile[0].methods.method];
 
-      const methodsCoverage = methodsAsArray
-        .map((methodMeta) => ({
-          number: methodMeta.lines.line._attributes.number,
-          hit: isHit(methodMeta._attributes.hits),
-        }))
-        .reduce((acc, current) => {
-          acc[current.number] = current.hit;
-          return acc;
-        }, {});
+        methodsCoverage = methodsAsArray
+          .map((methodMeta) => ({
+            number: methodMeta.lines.line._attributes.number,
+            hit: isHit(methodMeta._attributes.hits),
+          }))
+          .reduce((acc, current) => {
+            acc[current.number] = current.hit;
+            return acc;
+          }, {});
+      }
 
       additions.forEach((line) => {
         const lineNumber = line.ln.toString();
         if (lineNumber in linesCoverage) {
           report.lines_which_changed++;
-          if (!linesCoverage[lineNumber]) {
-            report.lines_which_were_missed++;
+          if (linesCoverage[lineNumber]) {
+            report.lines_which_were_hit++;
           }
         }
-        if (lineNumber in methodsCoverage) {
-          report.methods_which_changed++;
-          if (!methodsCoverage[lineNumber]) {
-            report.methods_which_were_missed++;
+        if (methodsCoverage) {
+          if (lineNumber in methodsCoverage) {
+            report.methods_which_changed++;
+            if (methodsCoverage[lineNumber]) {
+              report.methods_which_were_hit++;
+            }
           }
         }
       });
+      if (report.methods_which_changed > 0) {
+        report.percentage_methods_hit =
+          report.methods_which_were_hit / report.methods_which_changed;
+      }
+      report.percentage_lines_hit =
+        report.lines_which_were_hit / report.lines_which_changed;
+
       return report;
     }
   });
@@ -170,23 +189,59 @@ function getMissedCoverageReport(fileName) {
 
 const restriction = {
   newFile: {
-    methodMiss: 0.4,
-    lineMiss: 0.5,
+    methodHit: 0.4,
+    lineHit: 0.5,
   },
   existingFile: {
-    methodMiss: 0.2,
-    lineMiss: 0.5,
+    methodHit: 0.2,
+    lineHit: 0.5,
   },
 };
 
 const generateMissingTestFilesSummary = async (modifiedFiles) => {
   let report = '';
+  let didPrSucceed = true;
   for (let i = 0; i < modifiedFiles.length; i++) {
     //const r = await checkMissingCoverageLines(modifiedFiles[i]);
-    const r = await getMissedCoverageReport(modifiedFiles[i]);
-    report += modifiedFiles[i] + ': ' + JSON.stringify(r) + '\n';
+    const fileName = modifiedFiles[i];
+    const r = await getMissedCoverageReport(fileName);
+    const isNewFile = fileName in createdFilesMap;
+    let methodPass = 'NA',
+      linePass;
+
+    if (r.methods_which_changed) {
+      methodPass = isNewFile
+        ? r.percentage_methods_hit >= restriction.newFile.methodHit
+        : r.percentage_methods_hit >= restriction.existingFile.methodHit;
+      if (!methodPass) {
+        didPrSucceed = false;
+      }
+    }
+
+    linePass = isNewFile
+      ? r.percentage_lines_hit >= restriction.newFile.lineHit
+      : r.percentage_lines_hit >= restriction.existingFile.lineHit;
+
+    //const methodHitPass = isNewFile
+    if (!linePass) {
+      didPrSucceed = false;
+    }
+
+    report += fileName + ': ' + (isNewFile ? 'New File' : 'Existing File');
+    report += '\n';
+    report += JSON.stringify(r);
+    report += '\n';
+    report +=
+      'Are new lines covered by tests - passing the thresold ' + linePass;
+    if (methodPass !== 'NA') {
+      report += `\n Are Methods covered by tests - passing the thresold ${methodPass}`;
+    }
+    report += '\n';
   }
   message(report);
+  if (!didPrSucceed) {
+    fail('PR check failed because of lack of tests');
+  }
 };
 
 schedule(generateMissingTestFilesSummary(modifiedOrCreatedFiles));
