@@ -1,4 +1,4 @@
-import { message, danger, warn, schedule } from 'danger';
+import { message, danger, warn, schedule, fail } from 'danger';
 import { codeCoverage } from 'danger-plugin-code-coverage';
 import fs from 'fs';
 import path from 'path';
@@ -200,6 +200,7 @@ const restriction = {
 
 const generateMissingTestFilesSummary = async (modifiedFiles) => {
   let report = '';
+  let didPrSucceed = true;
   for (let i = 0; i < modifiedFiles.length; i++) {
     //const r = await checkMissingCoverageLines(modifiedFiles[i]);
     const fileName = modifiedFiles[i];
@@ -212,6 +213,9 @@ const generateMissingTestFilesSummary = async (modifiedFiles) => {
       methodPass = isNewFile
         ? r.percentage_methods_hit >= restriction.newFile.methodHit
         : r.percentage_methods_hit >= restriction.existingFile.methodHit;
+      if (!methodPass) {
+        didPrSucceed = false;
+      }
     }
 
     linePass = isNewFile
@@ -219,6 +223,9 @@ const generateMissingTestFilesSummary = async (modifiedFiles) => {
       : r.percentage_lines_hit >= restriction.existingFile.lineHit;
 
     //const methodHitPass = isNewFile
+    if (!linePass) {
+      didPrSucceed = false;
+    }
 
     report +=
       fileName + ': ' + isNewFile
@@ -234,6 +241,9 @@ const generateMissingTestFilesSummary = async (modifiedFiles) => {
         : '' + '\n';
   }
   message(report);
+  if (!didPrSucceed) {
+    fail('PR check failed because of lack of tests');
+  }
 };
 
 schedule(generateMissingTestFilesSummary(modifiedOrCreatedFiles));
