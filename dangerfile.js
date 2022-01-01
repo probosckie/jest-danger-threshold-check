@@ -231,9 +231,10 @@ const generateMissingTestFilesSummary = async (modifiedFiles) => {
     report += '\n';
     report += JSON.stringify(r);
     report += '\n';
-    report += 'Are new lines covered by tests ' + linePass;
+    report +=
+      'Are new lines covered by tests - passing the thresold ' + linePass;
     if (methodPass !== 'NA') {
-      report += `Are Methods covered by tests ${methodPass}`;
+      report += `\n Are Methods covered by tests - passing the thresold ${methodPass}`;
     }
     report += '\n';
   }
