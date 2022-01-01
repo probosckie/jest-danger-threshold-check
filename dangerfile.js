@@ -228,7 +228,9 @@ const generateMissingTestFilesSummary = async (modifiedFiles) => {
     }
 
     report += fileName + ': ' + (isNewFile ? 'New File' : 'Existing File');
+    report += '\n';
     report += JSON.stringify(r);
+    report += '\n';
     report += 'Are new lines covered by tests ' + linePass;
     if (methodPass !== 'NA') {
       report += `Are Methods covered by tests ${methodPass}`;
