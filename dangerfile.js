@@ -209,7 +209,7 @@ const generateMissingTestFilesSummary = async (modifiedFiles) => {
     let methodPass = 'NA',
       linePass;
 
-    if (r.percentage_methods_hit) {
+    if (r.methods_which_changed) {
       methodPass = isNewFile
         ? r.percentage_methods_hit >= restriction.newFile.methodHit
         : r.percentage_methods_hit >= restriction.existingFile.methodHit;
