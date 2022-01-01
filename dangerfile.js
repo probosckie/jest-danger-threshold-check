@@ -50,6 +50,11 @@ const modifiedOrCreatedFiles = [
   .filter((p) => p.includes('src/'))
   .filter((p) => isOnlyFiles(p) && isAppFile(p) && !isATestFile(p));
 
+const createdFilesMap = [...danger.git.created_files].reduce((acc, current) => {
+  acc[current] = true;
+  return acc;
+}, {});
+
 function isHit(param) {
   return param !== '0';
 }
@@ -170,6 +175,13 @@ function getMissedCoverageReport(fileName) {
           }
         }
       });
+      if (report.methods_which_changed > 0) {
+        report.percentage_methods_hit =
+          report.methods_which_were_hit / report.methods_which_changed;
+      }
+      report.percentage_lines_hit =
+        report.lines_which_were_hit / report.lines_which_changed;
+
       return report;
     }
   });
@@ -190,8 +202,36 @@ const generateMissingTestFilesSummary = async (modifiedFiles) => {
   let report = '';
   for (let i = 0; i < modifiedFiles.length; i++) {
     //const r = await checkMissingCoverageLines(modifiedFiles[i]);
-    const r = await getMissedCoverageReport(modifiedFiles[i]);
-    report += modifiedFiles[i] + ': ' + JSON.stringify(r) + '\n';
+    const fileName = modifiedFiles[i];
+    const r = await getMissedCoverageReport(fileName);
+    const isNewFile = fileName in createdFilesMap;
+    let methodPass = 'NA',
+      linePass;
+
+    if (r.percentage_methods_hit) {
+      methodPass = isNewFile
+        ? r.percentage_methods_hit >= restriction.newFile.methodHit
+        : r.percentage_methods_hit >= restriction.existingFile.methodHit;
+    }
+
+    linePass = isNewFile
+      ? r.percentage_lines_hit >= restriction.newFile.lineHit
+      : r.percentage_lines_hit >= restriction.existingFile.lineHit;
+
+    //const methodHitPass = isNewFile
+
+    report +=
+      fileName + ': ' + isNewFile
+        ? 'New File'
+        : 'Existing File' +
+            '  ' +
+            JSON.stringify(r) +
+            'Are new lines covered by tests ' +
+            linePass +
+            methodPass !==
+          'NA'
+        ? `Are Methods covered by tests ${methodPass}`
+        : '' + '\n';
   }
   message(report);
 };
